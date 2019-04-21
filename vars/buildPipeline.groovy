@@ -74,6 +74,7 @@ def call(body) {
 							
 							// run maven build in docker container
 							docker.image(BUILD_IMAGE).withRun("""\
+								-u ${slaveUid} \
 								-v ${workspace}:/ws:ro \
 								-v ${slaveHome}/.m2:/.m2:ro \
 								-v /tmp/emptyDir:/root/.m2:ro \
