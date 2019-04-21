@@ -35,6 +35,8 @@ def call(body) {
 	if (doReleaseBuild) {
 		currentBuild.rawBuild.keepLog(true)
 	}
+	
+	echo sh(returnStdout: true, script: 'env')
 
 	try {
 	
@@ -51,6 +53,7 @@ def call(body) {
 			echo "${env.CHANGE_TARGET}"
 			echo "${env.GIT_BRANCH}"
 			echo "$BRANCH_NAME"
+			echo sh(returnStdout: true, script: 'env')
 
 			node('docker') {
 				def workspace
