@@ -68,26 +68,14 @@ def call(body) {
 				stage ('Build') {
 					timeout(time: BUILD_TIMEOUT, unit: 'MINUTES') {
 
-						// treat maven cache read only by default
-						def cacheVolumeMount = "-v ${slaveHome}/.m2:/.m2:ro"
-						def cacheCopyCommand = 'cp -r /.m2 /tmp'
-
-						// treat maven cache writable for master branch
-						if (isMasterBranch && !isPullRequest) {
-							cacheVolumeMount = "-v ${slaveHome}/.m2:/tmp/.m2"
-							cacheCopyCommand = 'echo "Writable m2 cache enabled"'
-						}
-
 						// inject maven config file
 						configFileProvider(
 							[configFile(fileId: 'fba2768e-c997-4043-b10b-b5ca461aff54', variable: 'MAVEN_SETTINGS')]) {
 							
 							// run maven build in docker container
-							sh """docker run --rm \
-								-u ${slaveUid} \
-								-w /tmp/ws \
-								-v ${workspace}:/tmp/ws \
-								${cacheVolumeMount} \
+							docker.image(BUILD_IMAGE).withRun("""\
+								-v ${workspace}:/ws:ro \
+								-v ${slaveHome}/.m2:/.m2:ro \
 								-v /tmp/emptyDir:/root/.m2:ro \
 								-v $MAVEN_SETTINGS:/settings.xml:ro \
 								-e MAVEN_CONFIG=/tmp/.m2 \
@@ -95,7 +83,16 @@ def call(body) {
 								-m 4G \
 								--storage-opt size=20G \
 								--network proxy \
-								$BUILD_IMAGE /bin/sh -c '${cacheCopyCommand} && mvn -s /settings.xml clean verify'"""
+							""") { c ->
+								sh "docker exec ${c.id} cp /.m2 /tmp"
+								sh "docker exec ${c.id} cp /ws /tmp"
+								sh "docker exec ${c.id} mvn -s /settings.xml -f /tmp/ws/pom.xml clean verify"
+								sh "docker cp ${c.id}/tmp/ws ${workspace}"
+								if (isMasterBranch && !isPullRequest) {
+									sh "docker cp ${c.id}/tmp/.m2 ${slaveHome}/.m2"
+								}
+							}
+
 						}
 
 					}
