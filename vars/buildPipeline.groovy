@@ -47,6 +47,9 @@ def call(body) {
 					string(defaultValue: 'nightly', name: 'ReleaseVersion', description: 'Set version to be used for the release')
 				])
 			])
+			
+			echo "${env.CHANGE_TARGET}"
+			echo "${env.GIT_BRANCH}"
 
 			node('docker') {
 				def workspace
@@ -61,6 +64,8 @@ def call(body) {
 				
 				stage ('Checkout') {
 					checkout scm
+					echo "${env.CHANGE_TARGET}"
+					echo "${env.GIT_BRANCH}"
 				}
 				
 				stage ('Build') {
