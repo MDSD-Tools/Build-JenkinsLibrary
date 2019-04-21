@@ -14,6 +14,9 @@ def call(body) {
 	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
 	echo "Is master branch: $isMasterBranch"
 	boolean isPullRequest = !"${env.CHANGE_TARGET}".trim().isEmpty()
+	echo "${env.CHANGE_TARGET}"
+	echo "${env.CHANGE_TARGET}".trim()
+	echo "${env.CHANGE_TARGET}".trim().isEmpty()
 	echo "Is pull request: $isPullRequest"
 
 	// evaluation of build parameters
