@@ -50,6 +50,7 @@ def call(body) {
 			
 			echo "${env.CHANGE_TARGET}"
 			echo "${env.GIT_BRANCH}"
+			echo "$BRANCH_NAME"
 
 			node('docker') {
 				def workspace
