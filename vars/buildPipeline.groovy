@@ -13,7 +13,7 @@ def call(body) {
 	// evaluation of git build information
 	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
 	echo "Is master branch: $isMasterBranch"
-	boolean isPullRequest = env.CHANGE_TARGET
+	boolean isPullRequest = !(env.CHANGE_TARGET == null)
 	echo "Is pull request: $isPullRequest"
 
 	// evaluation of build parameters
