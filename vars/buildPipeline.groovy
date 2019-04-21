@@ -28,8 +28,8 @@ def call(body) {
 				final BUILD_IMAGE = 'maven:3-jdk-11'
 
 				// evaluation of git build information
-				boolean isPullRequest = env.CHANGE_TARGET.toBoolean()
-				boolean isMasterBranch = env.GIT_BRANCH == 'master'
+				boolean isPullRequest = ${env.CHANGE_TARGET}.toBoolean()
+				boolean isMasterBranch = ${env.GIT_BRANCH} == 'master'
 
 				// evaluation of build parameters
 				String relativeArtifactsDir = "${config.updateSiteLocation}"
