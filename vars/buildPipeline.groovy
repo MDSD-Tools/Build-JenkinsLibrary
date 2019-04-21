@@ -11,14 +11,13 @@ def call(body) {
 		
 		pipeline {
 		
-			parameters {
-				booleanParam (name: 'Release', defaultValue: false, description: 'Set true for Release')
-				string (defaultValue: '', description: 'set Version of Release', name: 'ReleaseVersion', trim: true)
-			}
-			
-			options {
-                timeout(time: 30, unit: 'MINUTES')
-			}
+			properties([
+				parameters([
+					booleanParam(defaultValue: false, name: 'Release', description: 'Set true for release build'),
+					string(defaultValue: 'nightly', name: 'ReleaseVersion', description: 'Set version to be used for the release')
+				])
+
+			])    
 
 			node('docker') {
 				def workspace
@@ -45,29 +44,31 @@ def call(body) {
 				}
 				
 				stage ('Build') {
-					def cacheVolumeMount = "-v ${slaveHome}/.m2:/.m2:ro"
-					def cacheCopyCommand = 'cp -r /.m2 /tmp'
-					//def cacheVolumeMount = "-v ${slaveHome}/.m2:/tmp/.m2"
-					//def cacheCopyCommand = 'echo "Writable m2 cache enabled"'
-					try {
-						configFileProvider(
-							[configFile(fileId: 'fba2768e-c997-4043-b10b-b5ca461aff54', variable: 'MAVEN_SETTINGS')]) {
-							 sh """docker run --rm \
-								-u ${slaveUid} \
-								-w /tmp/ws \
-								-v ${workspace}:/tmp/ws \
-								${cacheVolumeMount} \
-								-v /tmp/emptyDir:/root/.m2:ro \
-								-v $MAVEN_SETTINGS:/settings.xml:ro \
-								-e MAVEN_CONFIG=/tmp/.m2 \
-								-e MAVEN_OPTS=-Duser.home=/tmp \
-								-m 4G \
-								--storage-opt size=20G \
-								--network proxy \
-								maven:3-jdk-11 /bin/sh -c '${cacheCopyCommand} && mvn -s /settings.xml clean verify'"""
+					timeout(time: 30, unit: 'MINUTES') {
+						def cacheVolumeMount = "-v ${slaveHome}/.m2:/.m2:ro"
+						def cacheCopyCommand = 'cp -r /.m2 /tmp'
+						//def cacheVolumeMount = "-v ${slaveHome}/.m2:/tmp/.m2"
+						//def cacheCopyCommand = 'echo "Writable m2 cache enabled"'
+						try {
+							configFileProvider(
+								[configFile(fileId: 'fba2768e-c997-4043-b10b-b5ca461aff54', variable: 'MAVEN_SETTINGS')]) {
+								 sh """docker run --rm \
+									-u ${slaveUid} \
+									-w /tmp/ws \
+									-v ${workspace}:/tmp/ws \
+									${cacheVolumeMount} \
+									-v /tmp/emptyDir:/root/.m2:ro \
+									-v $MAVEN_SETTINGS:/settings.xml:ro \
+									-e MAVEN_CONFIG=/tmp/.m2 \
+									-e MAVEN_OPTS=-Duser.home=/tmp \
+									-m 4G \
+									--storage-opt size=20G \
+									--network proxy \
+									maven:3-jdk-11 /bin/sh -c '${cacheCopyCommand} && mvn -s /settings.xml clean verify'"""
+							}
+						} finally {
+							
 						}
-					} finally {
-						
 					}
 				}
 				
