@@ -84,8 +84,8 @@ def call(body) {
 								--storage-opt size=20G \
 								--network proxy \
 							""") { c ->
-								sh "docker exec ${c.id} cp /.m2 /tmp"
-								sh "docker exec ${c.id} cp /ws /tmp"
+								sh "docker exec ${c.id} cp -r /.m2 /tmp"
+								sh "docker exec ${c.id} cp -r /ws /tmp"
 								sh "docker exec ${c.id} mvn -s /settings.xml -f /tmp/ws/pom.xml clean verify"
 								sh "docker cp ${c.id}/tmp/ws ${workspace}"
 								if (isMasterBranch && !isPullRequest) {
