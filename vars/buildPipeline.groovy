@@ -33,7 +33,7 @@ def call(body) {
 
 				// evaluation of build parameters
 				String relativeArtifactsDir = "${config.updateSiteLocation}"
-				final MANDATORY_PARAMS = ['gitUrl', 'webserverDir', 'updateSiteLocation']
+				final MANDATORY_PARAMS = ['webserverDir', 'updateSiteLocation']
 				for (mandatoryParameter in MANDATORY_PARAMS) {
 					if (!config.containsKey(mandatoryParameter) || config.get(mandatoryParameter).toString().trim().isEmpty()) {
 						error "Missing mandatory parameter $mandatoryParameter"
