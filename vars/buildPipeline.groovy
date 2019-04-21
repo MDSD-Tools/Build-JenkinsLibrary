@@ -12,9 +12,9 @@ def call(body) {
 
 	// evaluation of git build information
 	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
-	echo "Is master branch: $isMasterBranch.toString()"
+	echo "Is master branch: $isMasterBranch"
 	boolean isPullRequest = !"${env.CHANGE_TARGET}".trim().isEmpty()
-	echo "Is pull request: $isPullRequest.toString()"
+	echo "Is pull request: $isPullRequest"
 
 	// evaluation of build parameters
 	String relativeArtifactsDir = "${config.updateSiteLocation}"
