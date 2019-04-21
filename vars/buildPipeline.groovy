@@ -8,12 +8,13 @@ def call(body) {
 	
 	// build constants
 	final BUILD_IMAGE = 'maven:3-jdk-11'
+	final BUILD_TIMEOUT = 30
 
 	// evaluation of git build information
-	echo "${env.CHANGE_TARGET}"
-	echo "${env.GIT_BRANCH}"
-	boolean isPullRequest = "${env.CHANGE_TARGET}".toBoolean()
-	boolean isMasterBranch = "${env.GIT_BRANCH}" == 'master'
+	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
+	echo "Is master branch: $isMasterBranch.toString()"
+	boolean isPullRequest = !"${env.CHANGE_TARGET}".trim().isEmpty()
+	echo "Is pull request: $isPullRequest.toString()"
 
 	// evaluation of build parameters
 	String relativeArtifactsDir = "${config.updateSiteLocation}"
@@ -47,10 +48,6 @@ def call(body) {
 					string(defaultValue: 'nightly', name: 'ReleaseVersion', description: 'Set version to be used for the release')
 				])
 			])
-			
-			echo "${env.CHANGE_TARGET}"
-			echo "${env.GIT_BRANCH}"
-			echo "$BRANCH_NAME"
 
 			node('docker') {
 				def workspace
@@ -64,14 +61,12 @@ def call(body) {
 				}
 				
 				stage ('Checkout') {
+					// scm is injected and configured by multi branch pipeline
 					checkout scm
-					echo "${env.CHANGE_TARGET}"
-					echo "${env.GIT_BRANCH}"
-					echo sh(returnStdout: true, script: 'env')
 				}
 				
 				stage ('Build') {
-					timeout(time: 30, unit: 'MINUTES') {
+					timeout(time: $BUILD_TIMEOUT, unit: 'MINUTES') {
 
 						// treat maven cache read only by default
 						def cacheVolumeMount = "-v ${slaveHome}/.m2:/.m2:ro"
@@ -105,15 +100,14 @@ def call(body) {
 
 					}
 				}
-				
-				if (isMasterBranch && !isPullRequest) {
 
-					stage ('Archive') {
-						archiveArtifacts "${relativeArtifactsDir}/**/*"
-					}
+				stage ('Archive') {
+					archiveArtifacts "${relativeArtifactsDir}/**/*"
+				}
 
-					stage ('Quality Metrics') {
+				stage ('Quality Metrics') {
 
+					if (!isPullRequest) {
 						publishHTML([
 							allowMissing: false,
 							alwaysLinkToLastBuild: false,
@@ -123,28 +117,37 @@ def call(body) {
 							reportName: 'JavaDoc',
 							reportTitles: ''
 						])
-
-						recordIssues([
-							tool: checkStyle([
-								pattern: '**/target/checkstyle-result.xml'
-							])
-						])
-
-						junit([
-							testResults: '**/surefire-reports/*.xml',
-							allowEmptyResults: true
-						])
-
-						jacoco([
-							execPattern: '**/target/*.exec',
-							classPattern: '**/target/classes',
-							sourcePattern: '**/src,**/src-gen,**/xtend-gen',
-							inclusionPattern: '**/*.class',
-							exclusionPattern: '**/*Test*.class'
-						])
 					}
 
+					recordIssues([
+						tool: checkStyle([
+							pattern: '**/target/checkstyle-result.xml'
+						])
+					])
+
+					junit([
+						testResults: '**/surefire-reports/*.xml',
+						allowEmptyResults: true
+					])
+
+					jacoco([
+						execPattern: '**/target/*.exec',
+						classPattern: '**/target/classes',
+						sourcePattern: '**/src,**/src-gen,**/xtend-gen',
+						inclusionPattern: '**/*.class',
+						exclusionPattern: '**/*Test*.class'
+					])
 				}
+				
+				stage ('Deploy') {
+					if (!isPullRequest && isMasterBranch) {
+					
+						echo 'TODO: add deployment'
+				
+					}
+				}
+
+				
 
 			}
 		}
