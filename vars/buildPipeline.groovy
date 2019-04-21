@@ -18,39 +18,40 @@ def call(body) {
 				])
 			])
 
-			// build constants
-			final BUILD_IMAGE = 'maven:3-jdk-11'
-
-			// evaluation of git build information
-			boolean isPullRequest = env.CHANGE_TARGET.toBoolean()
-			boolean isMasterBranch = env.GIT_BRANCH == 'master'
-
-			// evaluation of build parameters
-			String relativeArtifactsDir = "${config.updateSiteLocation}"
-			final MANDATORY_PARAMS = ['gitUrl', 'webserverDir', 'updateSiteLocation']
-			for (mandatoryParameter in MANDATORY_PARAMS) {
-				if (!config.containsKey(mandatoryParameter) || config.get(mandatoryParameter).toString().trim().isEmpty()) {
-					error "Missing mandatory parameter $mandatoryParameter"
-				}
-			}
-			boolean skipCodeQuality = config.containsKey('skipCodeQuality') && config.get('skipCodeQuality').toString().trim().toBoolean()
-			boolean skipNotification = config.containsKey('skipNotification') && config.get('skipNotification').toString().trim().toBoolean()
-			boolean doReleaseBuild = params.DO_RELEASE_BUILD.toString().toBoolean()
-			String releaseVersion = params.RELEASE_VERSION
-			if (doReleaseBuild && (releaseVersion == null || releaseVersion.trim().isEmpty())) {
-				error 'A release build requires a proper release version.'
-			}
-
-			// archive release build
-			if (doReleaseBuild) {
-				currentBuild.rawBuild.keepLog(true)
-			}
-
 			node('docker') {
 				def workspace
 				
 				def slaveHome = "${env.SLAVE_HOME}"
 				def slaveUid = "${env.SLAVE_USER_ID}"
+				
+				// build constants
+				final BUILD_IMAGE = 'maven:3-jdk-11'
+
+				// evaluation of git build information
+				boolean isPullRequest = env.CHANGE_TARGET.toBoolean()
+				boolean isMasterBranch = env.GIT_BRANCH == 'master'
+
+				// evaluation of build parameters
+				String relativeArtifactsDir = "${config.updateSiteLocation}"
+				final MANDATORY_PARAMS = ['gitUrl', 'webserverDir', 'updateSiteLocation']
+				for (mandatoryParameter in MANDATORY_PARAMS) {
+					if (!config.containsKey(mandatoryParameter) || config.get(mandatoryParameter).toString().trim().isEmpty()) {
+						error "Missing mandatory parameter $mandatoryParameter"
+					}
+				}
+				boolean skipCodeQuality = config.containsKey('skipCodeQuality') && config.get('skipCodeQuality').toString().trim().toBoolean()
+				boolean skipNotification = config.containsKey('skipNotification') && config.get('skipNotification').toString().trim().toBoolean()
+				boolean doReleaseBuild = params.DO_RELEASE_BUILD.toString().toBoolean()
+				String releaseVersion = params.RELEASE_VERSION
+				if (doReleaseBuild && (releaseVersion == null || releaseVersion.trim().isEmpty())) {
+					error 'A release build requires a proper release version.'
+				}
+
+				// archive release build
+				if (doReleaseBuild) {
+					currentBuild.rawBuild.keepLog(true)
+				}
+
 				
 				stage ('Prepare') {
 					deleteDir()
