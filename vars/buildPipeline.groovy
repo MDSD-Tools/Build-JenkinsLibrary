@@ -8,7 +8,9 @@ def call(body) {
 	
 	// build constants
 	final BUILD_IMAGE = 'maven:3-jdk-11'
-	final BUILD_TIMEOUT = 30
+	final BUILD_LIMIT_TIME = 30
+	final BUILD_LIMIT_RAM = '4G'
+	final BUILD_LIMIT_HDD = '20G'
 
 	// evaluation of git build information
 	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
@@ -66,7 +68,7 @@ def call(body) {
 				}
 				
 				stage ('Build') {
-					timeout(time: BUILD_TIMEOUT, unit: 'MINUTES') {
+					timeout(time: BUILD_LIMIT_TIME, unit: 'MINUTES') {
 
 						// inject maven config file
 						configFileProvider(
@@ -81,8 +83,8 @@ def call(body) {
 								-v $MAVEN_SETTINGS:/settings.xml:ro \
 								-e MAVEN_CONFIG=/tmp/.m2 \
 								-e MAVEN_OPTS=-Duser.home=/tmp \
-								-m 4G \
-								--storage-opt size=20G \
+								-m $BUILD_LIMIT_RAM \
+								--storage-opt size=$BUILD_LIMIT_HDD \
 								--network proxy \
 								-it \
 								--entrypoint=/bin/cat \
