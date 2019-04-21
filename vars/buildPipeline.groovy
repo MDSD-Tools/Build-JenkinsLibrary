@@ -143,6 +143,7 @@ def call(body) {
 	}
 	catch (err) {
 		currentBuild.result = "FAILURE"
+		echo err
 		throw err
 	}
 
