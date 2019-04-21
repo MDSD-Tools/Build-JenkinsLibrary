@@ -67,6 +67,7 @@ def call(body) {
 					checkout scm
 					echo "${env.CHANGE_TARGET}"
 					echo "${env.GIT_BRANCH}"
+					echo sh(returnStdout: true, script: 'env')
 				}
 				
 				stage ('Build') {
