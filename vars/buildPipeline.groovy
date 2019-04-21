@@ -35,8 +35,6 @@ def call(body) {
 	if (doReleaseBuild) {
 		currentBuild.rawBuild.keepLog(true)
 	}
-	
-	echo sh(returnStdout: true, script: 'env')
 
 	try {
 	
