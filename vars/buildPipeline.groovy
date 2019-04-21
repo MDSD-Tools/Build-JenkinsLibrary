@@ -70,8 +70,8 @@ def call(body) {
 
 						// treat maven cache writable for master branch
 						if (isMasterBranch && !isPullRequest) {
-							def cacheVolumeMount = "-v ${slaveHome}/.m2:/tmp/.m2"
-							def cacheCopyCommand = 'echo "Writable m2 cache enabled"'
+							cacheVolumeMount = "-v ${slaveHome}/.m2:/tmp/.m2"
+							cacheCopyCommand = 'echo "Writable m2 cache enabled"'
 						}
 
 						// inject maven config file
