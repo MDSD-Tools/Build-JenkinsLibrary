@@ -85,7 +85,7 @@ def call(body) {
 								--storage-opt size=20G \
 								--network proxy \
 								-it \
-								--entrypoint=/bin/cat
+								--entrypoint=/bin/cat \
 							""") { c ->
 								sh "docker exec ${c.id} cp -r /.m2 /tmp"
 								sh "docker exec ${c.id} cp -r /ws /tmp"
