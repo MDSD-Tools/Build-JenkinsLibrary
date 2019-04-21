@@ -69,7 +69,7 @@ def call(body) {
 				}
 				
 				stage ('Build') {
-					timeout(time: $BUILD_TIMEOUT, unit: 'MINUTES') {
+					timeout(time: BUILD_TIMEOUT, unit: 'MINUTES') {
 
 						// treat maven cache read only by default
 						def cacheVolumeMount = "-v ${slaveHome}/.m2:/.m2:ro"
