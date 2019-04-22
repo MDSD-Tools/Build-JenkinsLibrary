@@ -198,7 +198,7 @@ def notify(token, verb) {
 	mail([
 		subject: "${token}: build of ${JOB_NAME} #${BUILD_NUMBER}",
 		body: "The build of ${JOB_NAME} #${BUILD_NUMBER} ${verb}.\nPlease visit ${BUILD_URL} for details.",
-		to: MAIL_DEFAULT_RECIPIENT)
+		to: MAIL_DEFAULT_RECIPIENT
 	])
 }
 
