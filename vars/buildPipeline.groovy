@@ -1,3 +1,5 @@
+final MAIL_DEFAULT_RECIPIENT = new String('c3RlcGhhbi5zZWlmZXJtYW5uQGtpdC5lZHU='.decodeBase64())
+
 def call(body) {
 
 	// mandatory framework stuff
@@ -11,7 +13,6 @@ def call(body) {
 	final BUILD_LIMIT_TIME = 30
 	final BUILD_LIMIT_RAM = '4G'
 	final BUILD_LIMIT_HDD = '20G'
-	final MAIL_DEFAULT_RECIPIENT = new String('c3RlcGhhbi5zZWlmZXJtYW5uQGtpdC5lZHU='.decodeBase64())
 
 	// evaluation of git build information
 	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
