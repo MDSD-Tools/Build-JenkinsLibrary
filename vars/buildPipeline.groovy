@@ -11,6 +11,7 @@ def call(body) {
 	final BUILD_LIMIT_TIME = 30
 	final BUILD_LIMIT_RAM = '4G'
 	final BUILD_LIMIT_HDD = '20G'
+	final MAIL_DEFAULT_RECIPIENT = new String('c3RlcGhhbi5zZWlmZXJtYW5uQGtpdC5lZHU='.decodeBase64()
 
 	// evaluation of git build information
 	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
@@ -43,12 +44,14 @@ def call(body) {
 	
 		pipeline {
 		
-			// define parameters for parameterized builds
 			properties([
+				// define parameters for parameterized builds
 				parameters([
 					booleanParam(defaultValue: false, name: 'Release', description: 'Set true for release build'),
 					string(defaultValue: 'nightly', name: 'ReleaseVersion', description: 'Set version to be used for the release')
-				])
+				]),
+				// define log rotation
+				buildDiscarder(logRotator(artifactDaysToKeepStr: '1', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '')),
 			])
 
 			node('docker') {
@@ -109,36 +112,41 @@ def call(body) {
 
 				stage ('Quality Metrics') {
 
-					if (!isPullRequest) {
-						publishHTML([
-							allowMissing: false,
-							alwaysLinkToLastBuild: false,
-							keepAll: false,
-							reportDir: "${relativeArtifactsDir}/javadoc",
-							reportFiles: 'overview-summary.html',
-							reportName: 'JavaDoc',
-							reportTitles: ''
+					if (!skipCodeQuality) {
+
+						if (!isPullRequest) {
+							publishHTML([
+								allowMissing: false,
+								alwaysLinkToLastBuild: false,
+								keepAll: false,
+								reportDir: "${relativeArtifactsDir}/javadoc",
+								reportFiles: 'overview-summary.html',
+								reportName: 'JavaDoc',
+								reportTitles: ''
+							])
+						}
+
+						recordIssues([
+							tool: checkStyle([
+								pattern: '**/target/checkstyle-result.xml'
+							])
 						])
+
+						junit([
+							testResults: '**/surefire-reports/*.xml',
+							allowEmptyResults: true
+						])
+
+						jacoco([
+							execPattern: '**/target/*.exec',
+							classPattern: '**/target/classes',
+							sourcePattern: '**/src,**/src-gen,**/xtend-gen',
+							inclusionPattern: '**/*.class',
+							exclusionPattern: '**/*Test*.class'
+						])
+					} else {
+						echo 'Skipping collection of code quality metrics'
 					}
-
-					recordIssues([
-						tool: checkStyle([
-							pattern: '**/target/checkstyle-result.xml'
-						])
-					])
-
-					junit([
-						testResults: '**/surefire-reports/*.xml',
-						allowEmptyResults: true
-					])
-
-					jacoco([
-						execPattern: '**/target/*.exec',
-						classPattern: '**/target/classes',
-						sourcePattern: '**/src,**/src-gen,**/xtend-gen',
-						inclusionPattern: '**/*.class',
-						exclusionPattern: '**/*Test*.class'
-					])
 				}
 				
 				stage ('Deploy') {
@@ -155,9 +163,55 @@ def call(body) {
 		}
 	}
 	catch (err) {
-		currentBuild.result = "FAILURE"
-		echo err
+		currentBuild.result = 'FAILURE'
+		if (err instanceof hudson.AbortException && err.getMessage().contains('script returned exit code 143')) {
+			currentBuild.result = 'ABORTED'
+		}
+		if (err instanceof org.jenkinsci.plugins.workflow.steps.FlowInterruptedException && err.causes.size() == 0) {
+			currentBuild.result = 'ABORTED'
+		}
 		throw err
+	} finally {
+		def currentResult = currentBuild.result ?: 'SUCCESS'
+		def previousResult = currentBuild.previousBuild?.result ?: 'SUCCESS'
+
+		if (!skipNotification) {
+			if (currentResult == 'FAILURE') {
+				notifyFailure()
+			} else if (currentResult == 'SUCCESS' && previouslyFailed()) {
+				notifyFix()
+			}
+		}
 	}
 
+}
+
+def notifyFix() {
+	notify('FIXED', 'fixed previous build errors')
+}
+
+def notifyFailure() {
+	notify('FAILED', 'failed')
+}
+
+def notify(token, verb) {
+	mail([
+		subject: "${token}: build of ${JOB_NAME} #${BUILD_NUMBER}",
+		body: "The build of ${JOB_NAME} #${BUILD_NUMBER} ${verb}.\nPlease visit ${BUILD_URL} for details.",
+		to: MAIL_DEFAULT_RECIPIENT)
+	])
+}
+
+def previouslyFailed() {
+	for (buildObject = currentBuild.previousBuild; buildObject != null; buildObject = buildObject.previousBuild) {
+		if (buildObject.result == null) {
+			continue
+		}
+		if (buildObject.result == 'FAILURE') {
+			return true
+		}
+		if (buildObject.resultIsBetterOrEqualTo('UNSTABLE')) {
+			return false
+		}
+	}
 }
