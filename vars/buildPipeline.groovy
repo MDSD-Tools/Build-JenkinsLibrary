@@ -200,9 +200,9 @@ def notify(token, verb) {
 	emailext([
 		attachLog: true,
 		body: "The build of ${JOB_NAME} #${BUILD_NUMBER} ${verb}.\nPlease visit ${BUILD_URL} for details.",
-		recipientProviders: [[$class: 'RequesterRecipientProvider'], [$class:'CulpritsRecipientProvider']]
 		subject: "${token}: build of ${JOB_NAME} #${BUILD_NUMBER}",
-		to: MAIL_DEFAULT_RECIPIENT
+		to: MAIL_DEFAULT_RECIPIENT,
+		recipientProviders: [[$class: 'RequesterRecipientProvider'], [$class:'CulpritsRecipientProvider']]
 	])
 
 }
