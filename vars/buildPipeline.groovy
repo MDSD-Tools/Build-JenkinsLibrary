@@ -197,7 +197,7 @@ def notifyFailure(defaultRecipient) {
 def notify(defaultRecipient, token, verb) {
 
     wrap([$class: 'MaskPasswordsBuildWrapper', varMaskRegexes: [
-		[regex: '[^\s]+@[^\s,]+']
+		[regex: '[^\\s]+@[^\\s,]+']
 	]]) {
 		emailext([
 			attachLog: true,
