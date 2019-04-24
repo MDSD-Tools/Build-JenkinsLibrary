@@ -1,5 +1,3 @@
-MAIL_DEFAULT_RECIPIENT = new String('c3RlcGhhbi5zZWlmZXJtYW5uQGtpdC5lZHU='.decodeBase64())
-
 def call(body) {
 
 	// mandatory framework stuff
@@ -9,6 +7,7 @@ def call(body) {
 	body()
 	
 	// build constants
+	final MAIL_DEFAULT_RECIPIENT = new String('c3RlcGhhbi5zZWlmZXJtYW5uQGtpdC5lZHU='.decodeBase64())
 	final BUILD_IMAGE = 'maven:3-jdk-11'
 	final BUILD_LIMIT_TIME = 30
 	final BUILD_LIMIT_RAM = '4G'
@@ -178,30 +177,30 @@ def call(body) {
 
 		if (!skipNotification) {
 			if (currentResult == 'FAILURE') {
-				notifyFailure()
+				notifyFailure(MAIL_DEFAULT_RECIPIENT)
 			} else if (currentResult == 'SUCCESS' && previouslyFailed()) {
-				notifyFix()
+				notifyFix(MAIL_DEFAULT_RECIPIENT)
 			}
 		}
 	}
 
 }
 
-def notifyFix() {
-	notify('FIXED', 'fixed previous build errors')
+def notifyFix(defaultRecipient) {
+	notify(defaultRecipient, 'FIXED', 'fixed previous build errors')
 }
 
-def notifyFailure() {
-	notify('FAILED', 'failed')
+def notifyFailure(defaultRecipient) {
+	notify(defaultRecipient, 'FAILED', 'failed')
 }
 
-def notify(token, verb) {
+def notify(defaultRecipient, token, verb) {
 
 	emailext([
 		attachLog: true,
 		body: "The build of ${JOB_NAME} #${BUILD_NUMBER} ${verb}.\nPlease visit ${BUILD_URL} for details.",
 		subject: "${token}: build of ${JOB_NAME} #${BUILD_NUMBER}",
-		to: MAIL_DEFAULT_RECIPIENT,
+		to: defaultRecipient,
 		recipientProviders: [[$class: 'RequesterRecipientProvider'], [$class:'CulpritsRecipientProvider']]
 	])
 
