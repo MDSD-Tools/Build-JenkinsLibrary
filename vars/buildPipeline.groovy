@@ -196,13 +196,17 @@ def notifyFailure(defaultRecipient) {
 
 def notify(defaultRecipient, token, verb) {
 
-	emailext([
-		attachLog: true,
-		body: "The build of ${JOB_NAME} #${BUILD_NUMBER} ${verb}.\nPlease visit ${BUILD_URL} for details.",
-		subject: "${token}: build of ${JOB_NAME} #${BUILD_NUMBER}",
-		to: defaultRecipient,
-		recipientProviders: [[$class: 'RequesterRecipientProvider'], [$class:'CulpritsRecipientProvider']]
-	])
+    wrap([$class: 'MaskPasswordsBuildWrapper', varMaskRegexes: [
+		[regex: '[^\s]+@[^\s,]+']
+	]]) {
+		emailext([
+			attachLog: true,
+			body: "The build of ${JOB_NAME} #${BUILD_NUMBER} ${verb}.\nPlease visit ${BUILD_URL} for details.",
+			subject: "${token}: build of ${JOB_NAME} #${BUILD_NUMBER}",
+			to: defaultRecipient,
+			recipientProviders: [[$class: 'RequesterRecipientProvider'], [$class:'CulpritsRecipientProvider']]
+		])
+    }
 
 }
 
