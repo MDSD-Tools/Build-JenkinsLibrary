@@ -1,4 +1,4 @@
-final MAIL_DEFAULT_RECIPIENT = new String('c3RlcGhhbi5zZWlmZXJtYW5uQGtpdC5lZHU='.decodeBase64())
+MAIL_DEFAULT_RECIPIENT = new String('c3RlcGhhbi5zZWlmZXJtYW5uQGtpdC5lZHU='.decodeBase64())
 
 def call(body) {
 
@@ -196,11 +196,15 @@ def notifyFailure() {
 }
 
 def notify(token, verb) {
-	mail([
-		subject: "${token}: build of ${JOB_NAME} #${BUILD_NUMBER}",
+
+	emailext([
+		attachLog: true,
 		body: "The build of ${JOB_NAME} #${BUILD_NUMBER} ${verb}.\nPlease visit ${BUILD_URL} for details.",
+		recipientProviders: [[$class: 'RequesterRecipientProvider'], [$class:'CulpritsRecipientProvider']]
+		subject: "${token}: build of ${JOB_NAME} #${BUILD_NUMBER}",
 		to: MAIL_DEFAULT_RECIPIENT
 	])
+
 }
 
 def previouslyFailed() {
