@@ -166,8 +166,7 @@ def call(body) {
 					}
 				} finally {
 					stage ('Cleanup') {
-						sh 'rm -rf ./*'
-						sh 'rm -rf ./.*'
+						sh 'ls -A1 | xargs rm -rf'
 					}
 				}
 			}
