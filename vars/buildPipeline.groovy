@@ -77,30 +77,35 @@ def call(body) {
 						configFileProvider(
 							[configFile(fileId: 'fba2768e-c997-4043-b10b-b5ca461aff54', variable: 'MAVEN_SETTINGS')]) {
 							
-							// run maven build in docker container
-							docker.image(BUILD_IMAGE).withRun("""\
-								-u ${slaveUid} \
-								-v ${workspace}:/ws:ro \
-								-v ${slaveHome}/.m2:/.m2:ro \
-								-v /tmp/emptyDir:/root/.m2:ro \
-								-v $MAVEN_SETTINGS:/settings.xml:ro \
-								-e MAVEN_CONFIG=/tmp/.m2 \
-								-e MAVEN_OPTS=-Duser.home=/tmp \
-								-m $BUILD_LIMIT_RAM \
-								--storage-opt size=$BUILD_LIMIT_HDD \
-								--network proxy \
-								-it \
-								--entrypoint=/bin/cat \
-							""") { c ->
-								sh "docker exec ${c.id} cp -r /.m2 /tmp"
-								sh "docker exec ${c.id} cp -r /ws /tmp"
-								sh "docker exec ${c.id} mvn -s /settings.xml -f /tmp/ws/pom.xml clean verify"
-								sh "docker cp ${c.id}:/tmp/ws/. ${workspace}"
-								if (isMasterBranch && !isPullRequest) {
-									sh "docker cp ${c.id}:/tmp/.m2/. ${slaveHome}/.m2"
+							def emptyDir = "/tmp/${env.BUILD_TAG}"
+							try {
+								sh "mkdir -p $emptyDir"
+								// run maven build in docker container
+								docker.image(BUILD_IMAGE).withRun("""\
+									-u ${slaveUid} \
+									-v ${workspace}:/ws:ro \
+									-v ${slaveHome}/.m2:/.m2:ro \
+									-v $emptyDir:/root/.m2:ro \
+									-v $MAVEN_SETTINGS:/settings.xml:ro \
+									-e MAVEN_CONFIG=/tmp/.m2 \
+									-e MAVEN_OPTS=-Duser.home=/tmp \
+									-m $BUILD_LIMIT_RAM \
+									--storage-opt size=$BUILD_LIMIT_HDD \
+									--network proxy \
+									-it \
+									--entrypoint=/bin/cat \
+								""") { c ->
+									sh "docker exec ${c.id} cp -r /.m2 /tmp"
+									sh "docker exec ${c.id} cp -r /ws /tmp"
+									sh "docker exec ${c.id} mvn -s /settings.xml -f /tmp/ws/pom.xml clean verify"
+									sh "docker cp ${c.id}:/tmp/ws/. ${workspace}"
+									if (isMasterBranch && !isPullRequest) {
+										sh "docker cp ${c.id}:/tmp/.m2/. ${slaveHome}/.m2"
+									}
 								}
+							} finally {
+								sh "rm -rf $emptyDir"
 							}
-
 						}
 
 					}
