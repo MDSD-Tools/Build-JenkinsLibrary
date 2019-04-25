@@ -102,7 +102,7 @@ def call(body) {
 										sh "docker exec ${c.id} cp -r /ws /tmp"
 										sh "docker exec ${c.id} mvn -s /settings.xml -f /tmp/ws/pom.xml clean verify"
 										sh "docker cp ${c.id}:/tmp/ws/. ${workspace}"
-										if (isMasterBranch && !isPullRequest) {
+										if (!isPullRequest) {
 											sh "docker cp ${c.id}:/tmp/.m2/. ${slaveHome}/.m2"
 										}
 									}
