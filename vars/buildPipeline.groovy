@@ -66,105 +66,109 @@ def call(body) {
 					sh "mkdir -p $slaveHome/.m2"
 				}
 				
-				stage ('Checkout') {
-					// scm is injected and configured by multi branch pipeline
-					checkout scm
-				}
+				try {
 				
-				stage ('Build') {
-					timeout(time: BUILD_LIMIT_TIME, unit: 'MINUTES') {
-
-						// inject maven config file
-						configFileProvider(
-							[configFile(fileId: 'fba2768e-c997-4043-b10b-b5ca461aff54', variable: 'MAVEN_SETTINGS')]) {
-							
-							def emptyDir = "/tmp/${env.BUILD_TAG}"
-							try {
-								sh "mkdir -p $emptyDir"
-								// run maven build in docker container
-								docker.image(BUILD_IMAGE).withRun("""\
-									-u ${slaveUid} \
-									-v ${workspace}:/ws:ro \
-									-v ${slaveHome}/.m2:/.m2:ro \
-									-v $emptyDir:/root/.m2:ro \
-									-v $MAVEN_SETTINGS:/settings.xml:ro \
-									-e MAVEN_CONFIG=/tmp/.m2 \
-									-e MAVEN_OPTS=-Duser.home=/tmp \
-									-m $BUILD_LIMIT_RAM \
-									--storage-opt size=$BUILD_LIMIT_HDD \
-									--network proxy \
-									-it \
-									--entrypoint=/bin/cat \
-								""") { c ->
-									sh "docker exec ${c.id} cp -r /.m2 /tmp"
-									sh "docker exec ${c.id} cp -r /ws /tmp"
-									sh "docker exec ${c.id} mvn -s /settings.xml -f /tmp/ws/pom.xml clean verify"
-									sh "docker cp ${c.id}:/tmp/ws/. ${workspace}"
-									if (isMasterBranch && !isPullRequest) {
-										sh "docker cp ${c.id}:/tmp/.m2/. ${slaveHome}/.m2"
-									}
-								}
-							} finally {
-								sh "rm -rf $emptyDir"
-							}
-						}
-
+					stage ('Checkout') {
+						// scm is injected and configured by multi branch pipeline
+						checkout scm
 					}
-				}
-
-				stage ('Archive') {
-					archiveArtifacts "${relativeArtifactsDir}/**/*"
-				}
-
-				stage ('Quality Metrics') {
-
-					if (!skipCodeQuality) {
-
-						if (!isPullRequest) {
-							publishHTML([
-								allowMissing: false,
-								alwaysLinkToLastBuild: false,
-								keepAll: false,
-								reportDir: "${relativeArtifactsDir}/javadoc",
-								reportFiles: 'overview-summary.html',
-								reportName: 'JavaDoc',
-								reportTitles: ''
-							])
-						}
-
-						recordIssues([
-							tool: checkStyle([
-								pattern: '**/target/checkstyle-result.xml'
-							])
-						])
-
-						junit([
-							testResults: '**/surefire-reports/*.xml',
-							allowEmptyResults: true
-						])
-
-						jacoco([
-							execPattern: '**/target/*.exec',
-							classPattern: '**/target/classes',
-							sourcePattern: '**/src,**/src-gen,**/xtend-gen',
-							inclusionPattern: '**/*.class',
-							exclusionPattern: '**/*Test*.class'
-						])
-					} else {
-						echo 'Skipping collection of code quality metrics'
-					}
-				}
-				
-				stage ('Deploy') {
-					if (!isPullRequest && isMasterBranch) {
 					
-						echo 'TODO: add deployment'
-				
+					stage ('Build') {
+						timeout(time: BUILD_LIMIT_TIME, unit: 'MINUTES') {
+
+							// inject maven config file
+							configFileProvider(
+								[configFile(fileId: 'fba2768e-c997-4043-b10b-b5ca461aff54', variable: 'MAVEN_SETTINGS')]) {
+								
+								def emptyDir = "/tmp/${env.BUILD_TAG}"
+								try {
+									sh "mkdir -p $emptyDir"
+									// run maven build in docker container
+									docker.image(BUILD_IMAGE).withRun("""\
+										-u ${slaveUid} \
+										-v ${workspace}:/ws:ro \
+										-v ${slaveHome}/.m2:/.m2:ro \
+										-v $emptyDir:/root/.m2:ro \
+										-v $MAVEN_SETTINGS:/settings.xml:ro \
+										-e MAVEN_CONFIG=/tmp/.m2 \
+										-e MAVEN_OPTS=-Duser.home=/tmp \
+										-m $BUILD_LIMIT_RAM \
+										--storage-opt size=$BUILD_LIMIT_HDD \
+										--network proxy \
+										-it \
+										--entrypoint=/bin/cat \
+									""") { c ->
+										sh "docker exec ${c.id} cp -r /.m2 /tmp"
+										sh "docker exec ${c.id} cp -r /ws /tmp"
+										sh "docker exec ${c.id} mvn -s /settings.xml -f /tmp/ws/pom.xml clean verify"
+										sh "docker cp ${c.id}:/tmp/ws/. ${workspace}"
+										if (isMasterBranch && !isPullRequest) {
+											sh "docker cp ${c.id}:/tmp/.m2/. ${slaveHome}/.m2"
+										}
+									}
+								} finally {
+									sh "rm -rf $emptyDir"
+								}
+							}
+
+						}
+					}
+
+					stage ('Archive') {
+						archiveArtifacts "${relativeArtifactsDir}/**/*"
+					}
+
+					stage ('Quality Metrics') {
+
+						if (!skipCodeQuality) {
+
+							if (!isPullRequest) {
+								publishHTML([
+									allowMissing: false,
+									alwaysLinkToLastBuild: false,
+									keepAll: false,
+									reportDir: "${relativeArtifactsDir}/javadoc",
+									reportFiles: 'overview-summary.html',
+									reportName: 'JavaDoc',
+									reportTitles: ''
+								])
+							}
+
+							recordIssues([
+								tool: checkStyle([
+									pattern: '**/target/checkstyle-result.xml'
+								])
+							])
+
+							junit([
+								testResults: '**/surefire-reports/*.xml',
+								allowEmptyResults: true
+							])
+
+							jacoco([
+								execPattern: '**/target/*.exec',
+								classPattern: '**/target/classes',
+								sourcePattern: '**/src,**/src-gen,**/xtend-gen',
+								inclusionPattern: '**/*.class',
+								exclusionPattern: '**/*Test*.class'
+							])
+						} else {
+							echo 'Skipping collection of code quality metrics'
+						}
+					}
+					
+					stage ('Deploy') {
+						if (!isPullRequest && isMasterBranch) {
+						
+							echo 'TODO: add deployment'
+					
+						}
+					}
+				} finally {
+					stage ('Cleanup') {
+						sh 'rm -rf ./*'
 					}
 				}
-
-				
-
 			}
 		}
 	}
