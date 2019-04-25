@@ -63,6 +63,7 @@ def call(body) {
 				stage ('Prepare') {
 					deleteDir()
 					workspace = pwd()
+					sh "mkdir -p $slaveHome/.m2"
 				}
 				
 				stage ('Checkout') {
