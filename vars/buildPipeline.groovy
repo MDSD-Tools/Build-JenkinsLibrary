@@ -166,7 +166,8 @@ def call(body) {
 					}
 				} finally {
 					stage ('Cleanup') {
-						sh 'rm -rf "./{*,.*}"'
+						sh 'rm -rf ./*'
+						sh 'rm -rf ./.*'
 					}
 				}
 			}
