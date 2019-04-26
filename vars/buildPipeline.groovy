@@ -199,27 +199,26 @@ def call(body) {
 											)
 										]
 									)
+									sshPublisher(
+										failOnError: true,
+										publishers: [
+											sshPublisherDesc(
+												configName: SSH_NAME,
+												transfers: [
+													sshTransfer(
+														execCommand:
+															"cd $WEB_ROOT/${config.webserverDir} && " +
+															"mkdir -p releases/$releaseVersion && " +
+															"cp -a nightly/* releases/$releaseVersion/ && " +
+															"chmod +x $compositeScriptName && " +
+															"$compositeScriptName releases && " +
+															"rm $compositeScriptName"
+													)
+												]
+											)
+										]
+									)
 								}
-								sshPublisher(
-									failOnError: true,
-									publishers: [
-										sshPublisherDesc(
-											configName: SSH_NAME,
-											transfers: [
-												sshTransfer(
-													execCommand:
-														"cd $WEB_ROOT/${config.webserverDir} && " +
-														"mkdir -p releases/$releaseVersion && " +
-														"cp -a nightly/* releases/$releaseVersion/ && " +
-														"chmod +x $compositeScriptName && " +
-														"$compositeScriptName releases && " +
-														"rm $compositeScriptName"
-												)
-											]
-										)
-									]
-								)
-								
 							}
 					
 						}
