@@ -30,8 +30,8 @@ def call(body) {
 	}
 	boolean skipCodeQuality = config.containsKey('skipCodeQuality') && config.get('skipCodeQuality').toString().trim().toBoolean()
 	boolean skipNotification = config.containsKey('skipNotification') && config.get('skipNotification').toString().trim().toBoolean()
-	boolean doReleaseBuild = params.DO_RELEASE_BUILD.toString().toBoolean()
-	String releaseVersion = params.RELEASE_VERSION
+	boolean doReleaseBuild = params.Release.toString().toBoolean()
+	String releaseVersion = params.ReleaseVersion
 	if (doReleaseBuild && (releaseVersion == null || releaseVersion.trim().isEmpty())) {
 		error 'A release build requires a proper release version.'
 	}
