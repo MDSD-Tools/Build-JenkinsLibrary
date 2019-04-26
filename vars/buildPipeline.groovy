@@ -242,7 +242,7 @@ def call(body) {
 		}
 		throw err
 	} finally {
-		emailNotification(MAIL_DEFAULT_RECIPIENT)
+		emailNotification(MAIL_DEFAULT_RECIPIENT, skipNotification)
 	}
 
 }

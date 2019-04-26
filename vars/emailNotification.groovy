@@ -1,4 +1,4 @@
-def call(def defaultRecipient) {
+def call(def defaultRecipient, def skipNotification = false) {
     def currentResult = currentBuild.result ?: 'SUCCESS'
 	def previousResult = currentBuild.previousBuild?.result ?: 'SUCCESS'
 
