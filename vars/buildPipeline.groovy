@@ -184,6 +184,10 @@ def call(body) {
 									[configFile(fileId: '57dc902b-f5a7-49a9-aec3-98deabe48580', variable: 'COMPOSITE_SCRIPT')]) {
 									def compositeScript = new File("$COMPOSITE_SCRIPT")
 									def compositeScriptName = compositeScript.getName()
+									
+									echo "${COMPOSITE_SCRIPT}"
+									echo "${compositeScript.getParent()}"
+									
 									sshPublisher(
 										failOnError: true,
 										publishers: [
@@ -212,7 +216,7 @@ def call(body) {
 															"mkdir -p releases/$releaseVersion && " +
 															"cp -a nightly/* releases/$releaseVersion/ && " +
 															"chmod +x $compositeScriptName && " +
-															"$compositeScriptName releases && " +
+															"./$compositeScriptName releases && " +
 															"rm $compositeScriptName"
 													)
 												]
