@@ -12,6 +12,7 @@ def call(body) {
 	final BUILD_LIMIT_TIME = 30
 	final BUILD_LIMIT_RAM = '4G'
 	final BUILD_LIMIT_HDD = '20G'
+	final SSH_NAME = 'web'
 
 	// evaluation of git build information
 	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
@@ -158,18 +159,19 @@ def call(body) {
 					}
 					
 					stage ('Deploy') {
-						if (!isPullRequest && isMasterBranch) {
+						if (!isPullRequest) {
+						//if (!isPullRequest && isMasterBranch) {
 						
 							sshPublisher(
 								failOnError: true,
 								publishers: [
 									sshPublisherDesc(
-										configName: "${config.sshConfigName}",
+										configName: SSH_NAME,
 										transfers: [
 											sshTransfer(
 												sourceFiles: "${relativeArtifactsDir}/**/*",
 												cleanRemote: true,
-												removePrefix: "${workspace}/${relativeArtifactsDir}",
+												removePrefix: "${relativeArtifactsDir}",
 												remoteDirectory: "${config.webserverDir}/nightly"
 											)
 										]
@@ -177,24 +179,32 @@ def call(body) {
 								]
 							)
 							if (doReleaseBuild) {
-								sshPublisher(
-									failOnError: true,
-									publishers: [
-										sshPublisherDesc(
-											configName: "${config.sshConfigName}",
-											transfers: [
-												sshTransfer(
-													execCommand:
-													"rm -rf ${config.absoluteWebserverDir}/${config.webserverDir}/releases/latest &&" +
-													"rm -rf ${config.absoluteWebserverDir}/${config.webserverDir}/releases/$releaseVersion &&" +
-													"mkdir -p ${config.absoluteWebserverDir}/${config.webserverDir}/releases/$releaseVersion &&" +
-													"cp -a ${config.absoluteWebserverDir}/${config.webserverDir}/nightly/* ${config.absoluteWebserverDir}/${config.webserverDir}/releases/$releaseVersion/ &&" +
-													"ln -s ${config.absoluteWebserverDir}/${config.webserverDir}/releases/$releaseVersion ${config.absoluteWebserverDir}/${config.webserverDir}/releases/latest"
-												)
-											]
-										)
-									]
-								)
+								configFileProvider(
+									[configFile(fileId: '57dc902b-f5a7-49a9-aec3-98deabe48580', variable: 'COMPOSITE_SCRIPT')]) {
+									def compositeScript = new File("$COMPOSITE_SCRIPT")
+									def compositeScriptName = compositeScript.getName()
+									sshPublisher(
+										failOnError: true,
+										publishers: [
+											sshPublisherDesc(
+												configName: SSH_NAME,
+												transfers: [
+													sshTransfer(
+														sourceFiles: "$COMPOSITE_SCRIPT",
+														removePrefix: "${compositeScript.getParent()}",
+														remoteDirectory: "${config.webserverDir}"
+														execCommand:
+															"mkdir -p ${config.webserverDir}/releases/$releaseVersion && " +
+															"cp -a ${config.webserverDir}/nightly/* ${config.webserverDir}/releases/$releaseVersion/ && " +
+															"chmod +x ${config.webserverDir}/$compositeScriptName && " +
+															"${config.webserverDir}/$compositeScriptName ${config.webserverDir}/releases && " +
+															"rm ${config.webserverDir}/$compositeScriptName"
+													)
+												]
+											)
+										]
+									)
+								}
 							}
 					
 						}
