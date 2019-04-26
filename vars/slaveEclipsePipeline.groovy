@@ -1,19 +1,10 @@
-def call(body) {
+def call(body, sshName, webRoot, defaultRecipient, buildImage = 'maven:3-jdk-11', buildLimitTime = 30, buildLimitRam = '4G', buildLimitHdd = '20G') {
 
 	// mandatory framework stuff
 	def config = [:]
 	body.resolveStrategy = Closure.DELEGATE_FIRST
 	body.delegate = config
 	body()
-	
-	// build constants
-	final MAIL_DEFAULT_RECIPIENT = new String('c3RlcGhhbi5zZWlmZXJtYW5uQGtpdC5lZHU='.decodeBase64())
-	final BUILD_IMAGE = 'maven:3-jdk-11'
-	final BUILD_LIMIT_TIME = 30
-	final BUILD_LIMIT_RAM = '4G'
-	final BUILD_LIMIT_HDD = '20G'
-	final SSH_NAME = 'web'
-	final WEB_ROOT = '/home/deploy/html'
 
 	// evaluation of git build information
 	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
@@ -76,7 +67,7 @@ def call(body) {
 					}
 					
 					stage ('Build') {
-						timeout(time: BUILD_LIMIT_TIME, unit: 'MINUTES') {
+						timeout(time: buildLimitTime, unit: 'MINUTES') {
 
 							// inject maven config file
 							configFileProvider(
@@ -86,7 +77,7 @@ def call(body) {
 								try {
 									sh "mkdir -p $emptyDir"
 									// run maven build in docker container
-									docker.image(BUILD_IMAGE).withRun("""\
+									docker.image(buildImage).withRun("""\
 										-u ${slaveUid} \
 										-v ${workspace}:/ws:ro \
 										-v ${slaveHome}/.m2:/.m2:ro \
@@ -94,8 +85,8 @@ def call(body) {
 										-v $MAVEN_SETTINGS:/settings.xml:ro \
 										-e MAVEN_CONFIG=/tmp/.m2 \
 										-e MAVEN_OPTS=-Duser.home=/tmp \
-										-m $BUILD_LIMIT_RAM \
-										--storage-opt size=$BUILD_LIMIT_HDD \
+										-m $buildLimitRam \
+										--storage-opt size=$buildLimitHdd \
 										--network proxy \
 										-it \
 										--entrypoint=/bin/cat \
@@ -168,7 +159,7 @@ def call(body) {
 								failOnError: true,
 								publishers: [
 									sshPublisherDesc(
-										configName: SSH_NAME,
+										configName: sshName,
 										transfers: [
 											sshTransfer(
 												sourceFiles: "${relativeArtifactsDir}/**/*",
@@ -192,7 +183,7 @@ def call(body) {
 											failOnError: true,
 											publishers: [
 												sshPublisherDesc(
-													configName: SSH_NAME,
+													configName: sshName,
 													transfers: [
 														sshTransfer(
 															sourceFiles: "$SCRIPTNAME",
@@ -201,11 +192,11 @@ def call(body) {
 													]
 												),
 												sshPublisherDesc(
-													configName: SSH_NAME,
+													configName: sshName,
 													transfers: [
 														sshTransfer(
 															execCommand:
-																"cd $WEB_ROOT/${config.webserverDir} && " +
+																"cd $webRoot/${config.webserverDir} && " +
 																"mkdir -p releases/$releaseVersion && " +
 																"cp -a nightly/* releases/$releaseVersion/ && " +
 																"chmod +x $SCRIPTNAME && " +
@@ -242,7 +233,7 @@ def call(body) {
 		}
 		throw err
 	} finally {
-		emailNotification(MAIL_DEFAULT_RECIPIENT, skipNotification)
+		emailNotification(defaultRecipient, skipNotification)
 	}
 
 }
