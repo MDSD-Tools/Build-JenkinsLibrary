@@ -189,9 +189,10 @@ def call(body) {
 										publishers: [
 											sshPublisherDesc(
 												configName: SSH_NAME,
+												verbose: true,
 												transfers: [
 													sshTransfer(
-														sourceFiles: "$COMPOSITE_SCRIPT",
+														sourceFiles: "${COMPOSITE_SCRIPT}",
 														removePrefix: "${compositeScript.getParent()}",
 														remoteDirectory: "${config.webserverDir}"
 													)
