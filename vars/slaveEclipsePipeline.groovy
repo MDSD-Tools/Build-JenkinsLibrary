@@ -151,8 +151,7 @@ def call(body, sshName, webRoot, defaultRecipient, buildImage = 'maven:3-jdk-11'
 					}
 					
 					stage ('Deploy') {
-						if (!isPullRequest) {
-						//if (!isPullRequest && isMasterBranch) {
+						if (!isPullRequest && isMasterBranch) {
 						
 							sshPublisher(
 								alwaysPublishFromMaster: true,
@@ -171,49 +170,50 @@ def call(body, sshName, webRoot, defaultRecipient, buildImage = 'maven:3-jdk-11'
 									)
 								]
 							)
-							if (doReleaseBuild) {
-								configFileProvider(
-									[configFile(fileId: '57dc902b-f5a7-49a9-aec3-98deabe48580', variable: 'COMPOSITE_SCRIPT')]) {
-									def SCRIPTNAME = 'compositeCreate.sh'
-									sh "rm -f ./$SCRIPTNAME"
-									sh "cp $COMPOSITE_SCRIPT ./$SCRIPTNAME"
-									try {
-										sshPublisher(
-											alwaysPublishFromMaster: true,
-											failOnError: true,
-											publishers: [
-												sshPublisherDesc(
-													configName: sshName,
-													transfers: [
-														sshTransfer(
-															sourceFiles: "$SCRIPTNAME",
-															remoteDirectory: "${config.webserverDir}"
-														)
-													]
-												),
-												sshPublisherDesc(
-													configName: sshName,
-													transfers: [
-														sshTransfer(
-															execCommand:
-																"cd $webRoot/${config.webserverDir} && " +
-																"mkdir -p releases/$releaseVersion && " +
-																"cp -a nightly/* releases/$releaseVersion/ && " +
-																"chmod +x $SCRIPTNAME && " +
-																"./$SCRIPTNAME releases && " +
-																"rm $SCRIPTNAME"
-														)
-													]
-												)
-											]
-										)
-									} finally {
-										sh "rm ./$SCRIPTNAME"
-									}
+						}
+						
+						if (doReleaseBuild) {
+							configFileProvider(
+								[configFile(fileId: '57dc902b-f5a7-49a9-aec3-98deabe48580', variable: 'COMPOSITE_SCRIPT')]) {
+								def SCRIPTNAME = 'compositeCreate.sh'
+								sh "rm -f ./$SCRIPTNAME"
+								sh "cp $COMPOSITE_SCRIPT ./$SCRIPTNAME"
+								try {
+									sshPublisher(
+										alwaysPublishFromMaster: true,
+										failOnError: true,
+										publishers: [
+											sshPublisherDesc(
+												configName: sshName,
+												transfers: [
+													sshTransfer(
+														sourceFiles: "$SCRIPTNAME",
+														remoteDirectory: "${config.webserverDir}"
+													)
+												]
+											),
+											sshPublisherDesc(
+												configName: sshName,
+												transfers: [
+													sshTransfer(
+														execCommand:
+															"cd $webRoot/${config.webserverDir} && " +
+															"mkdir -p releases/$releaseVersion && " +
+															"cp -a nightly/* releases/$releaseVersion/ && " +
+															"chmod +x $SCRIPTNAME && " +
+															"./$SCRIPTNAME releases && " +
+															"rm $SCRIPTNAME"
+													)
+												]
+											)
+										]
+									)
+								} finally {
+									sh "rm ./$SCRIPTNAME"
 								}
 							}
-					
 						}
+
 					}
 				} finally {
 					stage ('Cleanup') {
