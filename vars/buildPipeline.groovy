@@ -196,7 +196,7 @@ def call(body) {
 												verbose: true,
 												transfers: [
 													sshTransfer(
-														sourceFiles: "${COMPOSITE_SCRIPT}",
+														sourceFiles: "${compositeScript.getParent()}/*",
 														removePrefix: "${compositeScript.getParent()}",
 														remoteDirectory: "${config.webserverDir}"
 													)
