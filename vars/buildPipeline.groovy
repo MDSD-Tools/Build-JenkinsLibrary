@@ -193,20 +193,33 @@ def call(body) {
 													sshTransfer(
 														sourceFiles: "$COMPOSITE_SCRIPT",
 														removePrefix: "${compositeScript.getParent()}",
-														remoteDirectory: "${config.webserverDir}",
-														execCommand:
-															"cd $WEB_ROOT/${config.webserverDir} && " +
-															"mkdir -p releases/$releaseVersion && " +
-															"cp -a nightly/* releases/$releaseVersion/ && " +
-															"chmod +x $compositeScriptName && " +
-															"$compositeScriptName releases && " +
-															"rm $compositeScriptName"
+														remoteDirectory: "${config.webserverDir}"
 													)
 												]
 											)
 										]
 									)
 								}
+								sshPublisher(
+									failOnError: true,
+									publishers: [
+										sshPublisherDesc(
+											configName: SSH_NAME,
+											transfers: [
+												sshTransfer(
+													execCommand:
+														"cd $WEB_ROOT/${config.webserverDir} && " +
+														"mkdir -p releases/$releaseVersion && " +
+														"cp -a nightly/* releases/$releaseVersion/ && " +
+														"chmod +x $compositeScriptName && " +
+														"$compositeScriptName releases && " +
+														"rm $compositeScriptName"
+												)
+											]
+										)
+									]
+								)
+								
 							}
 					
 						}
