@@ -164,6 +164,7 @@ def call(body) {
 						//if (!isPullRequest && isMasterBranch) {
 						
 							sshPublisher(
+								alwaysPublishFromMaster: true,
 								failOnError: true,
 								publishers: [
 									sshPublisherDesc(
@@ -187,23 +188,18 @@ def call(body) {
 									sh "cp $COMPOSITE_SCRIPT ./$SCRIPTNAME"
 									try {
 										sshPublisher(
+											alwaysPublishFromMaster: true,
 											failOnError: true,
 											publishers: [
 												sshPublisherDesc(
 													configName: SSH_NAME,
-													verbose: true,
 													transfers: [
 														sshTransfer(
 															sourceFiles: "$SCRIPTNAME",
 															remoteDirectory: "${config.webserverDir}"
 														)
 													]
-												)
-											]
-										)
-										sshPublisher(
-											failOnError: true,
-											publishers: [
+												),
 												sshPublisherDesc(
 													configName: SSH_NAME,
 													transfers: [
