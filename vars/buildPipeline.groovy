@@ -160,7 +160,42 @@ def call(body) {
 					stage ('Deploy') {
 						if (!isPullRequest && isMasterBranch) {
 						
-							echo 'TODO: add deployment'
+							sshPublisher(
+								failOnError: true,
+								publishers: [
+									sshPublisherDesc(
+										configName: "${config.sshConfigName}",
+										transfers: [
+											sshTransfer(
+												sourceFiles: "${relativeArtifactsDir}/**/*",
+												cleanRemote: true,
+												removePrefix: "${workspace}/${relativeArtifactsDir}",
+												remoteDirectory: "${config.webserverDir}/nightly"
+											)
+										]
+									)
+								]
+							)
+							if (doReleaseBuild) {
+								sshPublisher(
+									failOnError: true,
+									publishers: [
+										sshPublisherDesc(
+											configName: "${config.sshConfigName}",
+											transfers: [
+												sshTransfer(
+													execCommand:
+													"rm -rf ${config.absoluteWebserverDir}/${config.webserverDir}/releases/latest &&" +
+													"rm -rf ${config.absoluteWebserverDir}/${config.webserverDir}/releases/$releaseVersion &&" +
+													"mkdir -p ${config.absoluteWebserverDir}/${config.webserverDir}/releases/$releaseVersion &&" +
+													"cp -a ${config.absoluteWebserverDir}/${config.webserverDir}/nightly/* ${config.absoluteWebserverDir}/${config.webserverDir}/releases/$releaseVersion/ &&" +
+													"ln -s ${config.absoluteWebserverDir}/${config.webserverDir}/releases/$releaseVersion ${config.absoluteWebserverDir}/${config.webserverDir}/releases/latest"
+												)
+											]
+										)
+									]
+								)
+							}
 					
 						}
 					}
@@ -207,7 +242,7 @@ def notifyFailure(defaultRecipient) {
 def notify(defaultRecipient, token, verb) {
 	node {
 		wrap([$class: 'MaskPasswordsBuildWrapper', varMaskRegexes: [
-			[regex: '[^\\s]+@[^\\s,]+']
+			[regex: '@[^\\s,]+']
 		]]) {
 			emailext([
 				attachLog: true,
