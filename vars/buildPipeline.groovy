@@ -201,7 +201,7 @@ def call(body) {
 					}
 				} finally {
 					stage ('Cleanup') {
-						sh 'ls -A1 | xargs -0 rm -rf'
+						sh 'ls -A1 | xargs -d '\n' rm -rf'
 					}
 				}
 			}
