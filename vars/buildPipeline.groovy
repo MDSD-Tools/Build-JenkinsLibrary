@@ -192,7 +192,7 @@ def call(body) {
 													sshTransfer(
 														sourceFiles: "$COMPOSITE_SCRIPT",
 														removePrefix: "${compositeScript.getParent()}",
-														remoteDirectory: "${config.webserverDir}"
+														remoteDirectory: "${config.webserverDir}",
 														execCommand:
 															"mkdir -p ${config.webserverDir}/releases/$releaseVersion && " +
 															"cp -a ${config.webserverDir}/nightly/* ${config.webserverDir}/releases/$releaseVersion/ && " +
