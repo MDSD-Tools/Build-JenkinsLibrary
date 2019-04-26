@@ -182,47 +182,47 @@ def call(body) {
 							if (doReleaseBuild) {
 								configFileProvider(
 									[configFile(fileId: '57dc902b-f5a7-49a9-aec3-98deabe48580', variable: 'COMPOSITE_SCRIPT')]) {
-									def compositeScript = new File("$COMPOSITE_SCRIPT")
-									def compositeScriptName = compositeScript.getName()
-									
-									echo "${COMPOSITE_SCRIPT}"
-									echo "${compositeScript.getParent()}"
-									
-									sshPublisher(
-										failOnError: true,
-										publishers: [
-											sshPublisherDesc(
-												configName: SSH_NAME,
-												verbose: true,
-												transfers: [
-													sshTransfer(
-														sourceFiles: "${compositeScript.getParent()}/*",
-														removePrefix: "${compositeScript.getParent()}",
-														remoteDirectory: "${config.webserverDir}"
-													)
-												]
-											)
-										]
-									)
-									sshPublisher(
-										failOnError: true,
-										publishers: [
-											sshPublisherDesc(
-												configName: SSH_NAME,
-												transfers: [
-													sshTransfer(
-														execCommand:
-															"cd $WEB_ROOT/${config.webserverDir} && " +
-															"mkdir -p releases/$releaseVersion && " +
-															"cp -a nightly/* releases/$releaseVersion/ && " +
-															"chmod +x $compositeScriptName && " +
-															"./$compositeScriptName releases && " +
-															"rm $compositeScriptName"
-													)
-												]
-											)
-										]
-									)
+									def SCRIPTNAME = 'compositeCreate.sh'
+									sh "rm -f ./$SCRIPTNAME"
+									sh "cp $COMPOSITE_SCRIPT ./$SCRIPTNAME"
+									try {
+										sshPublisher(
+											failOnError: true,
+											publishers: [
+												sshPublisherDesc(
+													configName: SSH_NAME,
+													verbose: true,
+													transfers: [
+														sshTransfer(
+															sourceFiles: "$SCRIPTNAME",
+															remoteDirectory: "${config.webserverDir}"
+														)
+													]
+												)
+											]
+										)
+										sshPublisher(
+											failOnError: true,
+											publishers: [
+												sshPublisherDesc(
+													configName: SSH_NAME,
+													transfers: [
+														sshTransfer(
+															execCommand:
+																"cd $WEB_ROOT/${config.webserverDir} && " +
+																"mkdir -p releases/$releaseVersion && " +
+																"cp -a nightly/* releases/$releaseVersion/ && " +
+																"chmod +x $SCRIPTNAME && " +
+																"./$SCRIPTNAME releases && " +
+																"rm $SCRIPTNAME"
+														)
+													]
+												)
+											]
+										)
+									} finally {
+										sh "rm ./$SCRIPTNAME"
+									}
 								}
 							}
 					
