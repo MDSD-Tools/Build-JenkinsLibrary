@@ -13,6 +13,7 @@ def call(body) {
 	final BUILD_LIMIT_RAM = '4G'
 	final BUILD_LIMIT_HDD = '20G'
 	final SSH_NAME = 'web'
+	final WEB_ROOT = '/home/deploy/html'
 
 	// evaluation of git build information
 	boolean isMasterBranch = "$BRANCH_NAME" == 'master'
@@ -194,11 +195,12 @@ def call(body) {
 														removePrefix: "${compositeScript.getParent()}",
 														remoteDirectory: "${config.webserverDir}",
 														execCommand:
-															"mkdir -p ${config.webserverDir}/releases/$releaseVersion && " +
-															"cp -a ${config.webserverDir}/nightly/* ${config.webserverDir}/releases/$releaseVersion/ && " +
-															"chmod +x ${config.webserverDir}/$compositeScriptName && " +
-															"${config.webserverDir}/$compositeScriptName ${config.webserverDir}/releases && " +
-															"rm ${config.webserverDir}/$compositeScriptName"
+															"cd $WEB_ROOT/${config.webserverDir} && " +
+															"mkdir -p releases/$releaseVersion && " +
+															"cp -a nightly/* releases/$releaseVersion/ && " +
+															"chmod +x $compositeScriptName && " +
+															"$compositeScriptName releases && " +
+															"rm $compositeScriptName"
 													)
 												]
 											)
