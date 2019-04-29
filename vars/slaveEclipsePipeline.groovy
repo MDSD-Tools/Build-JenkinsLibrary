@@ -20,7 +20,7 @@ def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11
 			error "Missing mandatory parameter $mandatoryParameter"
 		}
 	}
-	String defaultRecipient = config.containsKey('defaultRecipient') ? config.get('defaultRecipient').toString().trim() : fallbackRecipient
+	String defaultRecipient = config.containsKey('defaultRecipient') ? decodeEmailAddress(config.get('defaultRecipient')) : fallbackRecipient
 	boolean skipCodeQuality = config.containsKey('skipCodeQuality') && config.get('skipCodeQuality').toString().trim().toBoolean()
 	boolean skipNotification = config.containsKey('skipNotification') && config.get('skipNotification').toString().trim().toBoolean()
 	boolean doReleaseBuild = params.Release.toString().toBoolean()
@@ -238,3 +238,7 @@ def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11
 	}
 
 }
+
+def decodeEmailAddress(configParameter) {
+	return configParameter.contains('@') ? configParameter : new String(configParameter.decodeBase64())
+]
