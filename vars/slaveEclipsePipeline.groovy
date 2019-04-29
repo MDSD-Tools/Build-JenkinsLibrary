@@ -1,4 +1,4 @@
-def call(body, sshName, webRoot, defaultRecipient, buildImage = 'maven:3-jdk-11', buildLimitTime = 30, buildLimitRam = '4G', buildLimitHdd = '20G') {
+def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11', buildLimitTime = 30, buildLimitRam = '4G', buildLimitHdd = '20G') {
 
 	// mandatory framework stuff
 	def config = [:]
@@ -20,6 +20,7 @@ def call(body, sshName, webRoot, defaultRecipient, buildImage = 'maven:3-jdk-11'
 			error "Missing mandatory parameter $mandatoryParameter"
 		}
 	}
+	String defaultRecipient = config.containsKey('defaultRecipient') ? config.get('defaultRecipient').toString().trim() : fallbackRecipient
 	boolean skipCodeQuality = config.containsKey('skipCodeQuality') && config.get('skipCodeQuality').toString().trim().toBoolean()
 	boolean skipNotification = config.containsKey('skipNotification') && config.get('skipNotification').toString().trim().toBoolean()
 	boolean doReleaseBuild = params.Release.toString().toBoolean()
