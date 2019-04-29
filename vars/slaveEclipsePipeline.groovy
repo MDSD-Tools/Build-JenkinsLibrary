@@ -241,4 +241,4 @@ def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11
 
 def decodeEmailAddress(configParameter) {
 	return configParameter.contains('@') ? configParameter : new String(configParameter.decodeBase64())
-]
+}
