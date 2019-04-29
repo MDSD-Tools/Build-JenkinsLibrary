@@ -1,6 +1,6 @@
 def call(body) {
 	
-	final MAIL_DEFAULT_RECIPIENT = new String('c3RlcGhhbi5zZWlmZXJtYW5uQGtpdC5lZHU='.decodeBase64())
+	final MAIL_DEFAULT_RECIPIENT = new String('bWRzZC10b29scy1idWlsZEBpcmEudWthLmRl'.decodeBase64())
 	final BUILD_IMAGE = 'maven:3-jdk-11'
 	final BUILD_LIMIT_TIME = 30
 	final BUILD_LIMIT_RAM = '4G'
