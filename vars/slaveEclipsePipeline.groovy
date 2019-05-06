@@ -23,6 +23,7 @@ def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11
 	String defaultRecipient = config.containsKey('defaultRecipient') ? decodeEmailAddress(config.get('defaultRecipient')) : fallbackRecipient
 	boolean skipCodeQuality = config.containsKey('skipCodeQuality') && config.get('skipCodeQuality').toString().trim().toBoolean()
 	boolean skipNotification = config.containsKey('skipNotification') && config.get('skipNotification').toString().trim().toBoolean()
+	boolean skipCleanup = config.containsKey('skipCleanup') && config.get('skipCleanup').toString().trim().toBoolean()
 	boolean doReleaseBuild = params.Release.toString().toBoolean()
 	String releaseVersion = params.ReleaseVersion
 	if (doReleaseBuild && (releaseVersion == null || releaseVersion.trim().isEmpty())) {
@@ -218,7 +219,9 @@ def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11
 					}
 				} finally {
 					stage ('Cleanup') {
-						sh "ls -A1 | xargs -d '\n' rm -rf"
+						if (!skipCleanup) {
+							sh "ls -A1 | xargs -d '\n' rm -rf"
+						}
 					}
 				}
 			}
