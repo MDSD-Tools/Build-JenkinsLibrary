@@ -46,7 +46,7 @@ def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11
 					string(defaultValue: 'nightly', name: 'ReleaseVersion', description: 'Set version to be used for the release')
 				]),
 				// define log rotation
-				buildDiscarder(logRotator(artifactDaysToKeepStr: '1', artifactNumToKeepStr: '', daysToKeepStr: '7', numToKeepStr: '')),
+				buildDiscarder(logRotator(artifactDaysToKeepStr: '1', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '100')),
 			])
 
 			node('docker') {
