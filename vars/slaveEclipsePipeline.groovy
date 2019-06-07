@@ -54,6 +54,7 @@ def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11
 				
 				def slaveHome = "${env.SLAVE_HOME}"
 				def slaveUid = "${env.SLAVE_USER_ID}"
+				def slaveName = "${env.NODE_NAME}"
 
 				stage ('Prepare') {
 					deleteDir()
@@ -93,12 +94,16 @@ def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11
 										-it \
 										--entrypoint=/bin/cat \
 									""") { c ->
-										sh "docker exec ${c.id} cp -r /.m2 /tmp"
+										lock("m2-cache-$slaveName") {
+											sh "docker exec ${c.id} cp -r /.m2 /tmp"
+										}
 										sh "docker exec ${c.id} cp -r /ws /tmp"
 										sh "docker exec ${c.id} mvn -s /settings.xml -f /tmp/ws/pom.xml clean verify"
 										sh "docker cp ${c.id}:/tmp/ws/. ${workspace}"
 										if (!isPullRequest) {
-											sh "docker cp ${c.id}:/tmp/.m2/. ${slaveHome}/.m2"
+											lock("m2-cache-$slaveName") {
+												sh "docker cp ${c.id}:/tmp/.m2/. ${slaveHome}/.m2"
+											}
 										}
 									}
 								} finally {
