@@ -98,7 +98,7 @@ def call(body, sshName, webRoot, fallbackRecipient, buildImage = 'maven:3-jdk-11
 											sh "docker exec ${c.id} cp -r /.m2 /tmp"
 										}
 										sh "docker exec ${c.id} cp -r /ws /tmp"
-										sh "docker exec ${c.id} mvn -s /settings.xml -f /tmp/ws/pom.xml clean verify"
+										sh "docker exec ${c.id} mvn -Duser.home=/tmp -s /settings.xml -f /tmp/ws/pom.xml clean verify"
 										sh "docker cp ${c.id}:/tmp/ws/. ${workspace}"
 										if (!isPullRequest) {
 											lock("m2-cache-$slaveName") {
