@@ -1,3 +1,3 @@
 if (CFG.archiveArtifactsDir) {
-	archiveArtifacts "${CFG.archiveArtifactsDir}/**/*"
+    archiveArtifacts "${CFG.archiveArtifactsDir}/**/*"
 }
