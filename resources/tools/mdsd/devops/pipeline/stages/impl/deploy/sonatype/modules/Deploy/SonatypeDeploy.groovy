@@ -18,8 +18,7 @@ extendConfiguration([
 
 CFG = getCurrentConfiguration()
 
-configFileProvider(
-        [configFile(fileId: CFG.deploySonatypeGpgId, variable: 'GPG_KEY')]) {
-            extendConfiguration([gpgKeyFile: GPG_KEY])
-            MPLModule("Build")
-        }
+configFileProvider([configFile(fileId: CFG.deploySonatypeGpgId, variable: 'GPG_KEY')]) {
+    extendConfiguration([gpgKeyFile: GPG_KEY])
+    MPLModule("Build")
+}

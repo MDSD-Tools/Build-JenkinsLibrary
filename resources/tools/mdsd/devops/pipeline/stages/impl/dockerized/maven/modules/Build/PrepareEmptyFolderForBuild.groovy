@@ -8,5 +8,3 @@ MPLModulePostStep {
 }
 
 sh "mkdir -p \"${CFG.emptySlaveDir}\""
-
-MPLModule('Apply Settings And Build')
