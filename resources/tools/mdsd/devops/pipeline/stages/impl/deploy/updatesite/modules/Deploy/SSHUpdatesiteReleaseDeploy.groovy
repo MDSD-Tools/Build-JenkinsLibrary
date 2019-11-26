@@ -1,5 +1,9 @@
+def scriptFileId = "57dc902b-f5a7-49a9-aec3-98deabe48580"
+if (CFG.createCompositeUpdatesiteScriptFileId) {
+	scriptFileId = CFG.createCompositeUpdatesiteScriptFileId
+}
 configFileProvider(
-    [configFile(fileId: '57dc902b-f5a7-49a9-aec3-98deabe48580', variable: 'COMPOSITE_SCRIPT')]) {
+    [configFile(fileId: scriptFileId, variable: 'COMPOSITE_SCRIPT')]) {
     def SCRIPTNAME = 'compositeCreate.sh'
     sh "rm -f ./$SCRIPTNAME"
     sh "cp $COMPOSITE_SCRIPT ./$SCRIPTNAME"
