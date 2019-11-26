@@ -30,7 +30,7 @@ configFileProvider(
                                 "mkdir -p releases/${CFG.deployReleaseVersion} && " +
                                 "cp -a ${CFG.deployUpdatesiteSubDir}/* releases/${CFG.deployReleaseVersion}/ && " +
                                 "rm -rf releases/latest && " +
-                                "ln -s releases/${CFG.deployReleaseVersion} releases/latest && " +
+                                "ln -s ${CFG.deployReleaseVersion} releases/latest && " +
                                 "chmod +x $SCRIPTNAME && " +
                                 "./$SCRIPTNAME releases && " +
                                 "rm $SCRIPTNAME"
