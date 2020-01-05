@@ -4,7 +4,7 @@ if (CFG.javadocArtifactsDir) {
         alwaysLinkToLastBuild: false,
         keepAll: false,
         reportDir: "${CFG.javadocArtifactsDir}",
-        reportFiles: 'overview-summary.html',
+        reportFiles: 'index.html',
         reportName: 'JavaDoc',
         reportTitles: ''
     ])
