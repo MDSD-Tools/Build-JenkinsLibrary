@@ -10,6 +10,7 @@ extendConfiguration([
     -v ${CFG.mavenSettingsFile}:/settings.xml:ro \
     -e MAVEN_CONFIG=/tmp/.m2 \
     -e MAVEN_OPTS=-Duser.home=/tmp \
+    -e USE_PROXY=true \
     """])
 
 MPLModule('Setup Container')
