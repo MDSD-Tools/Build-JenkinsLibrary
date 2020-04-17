@@ -19,7 +19,7 @@ def call(body) {
         skipNotification ("${this.BRANCH_NAME}" != 'master')
         
         deployUpdatesiteSshName 'web'
-        deployUpdatesiteRootDir '/home/deploy/html'
+        deployUpdatesiteRootDir '/home/sftp/data'
         deployUpdatesiteSubDir ("${this.BRANCH_NAME}" == 'master' ? 'nightly': "branches/${this.BRANCH_NAME}")
         deployUpdatesiteProjectDir this.scm.userRemoteConfigs[0].url.replaceFirst(/^.*\/([^\/]+?).git$/, '$1').toLowerCase()
 
