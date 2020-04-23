@@ -5,7 +5,7 @@ def gradleJdkVersion = CFG.gradleJdkVersion ?: '11'
 // We do not use the gradle wrapper directly, to avoid executing binary code from the repository and benefit from
 // caching of the build container images.
 if (!CFG.gradleVersion) {
-    def propFile = new File('/ws/gradle/wrapper/gradle-wrapper.properties')
+    def propFile = new File("${CFG.workspacePath}/gradle/wrapper/gradle-wrapper.properties")
     if (propFile.exists() && propFile.canRead()) {
         def wrapperProperties = new Properties()
         propFile.withInputStream {
