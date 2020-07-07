@@ -5,10 +5,15 @@ if (!CFG.deploySonatypeGpgId) {
     error 'A GPG key file id is mandatory for sonatype deployments.'
 }
 
+def mavenDeployGoal = "clean deploy -Plocal-build-deployable"
+if (CFG.deploySonatypeSingleArtifactDeploy) {
+    mavenDeployGoal = "gpg:sign-and-deploy-file -Psonatype-single-artifact-deploy"
+}
+
 extendConfiguration([
     sonatypeDeploymentActive: true,
     mavenSettingsId: CFG.deploySonatypeSettingsId,
-    mavenGoal: "clean deploy -Plocal-build-deployable",
+    mavenGoal: "${mavenDeployGoal}",
     skipCacheWriteBack: true,
     dockerWithRunParameters: "",
     dockerBuildImage: "",
