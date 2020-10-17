@@ -11,8 +11,12 @@ jacoco([
 
 if (CFG.isPullRequest) {
     echo "Test Coverage Debug"
-    def lastCoverageUrl = "${env.JOB_URL}/../master/lastSuccessfulBuild/jacoco/api/json"
+    def lastCoverageUrl = "${env.JOB_URL}../main/lastSuccessfulBuild/jacoco/api/json"
     def response = httpRequest lastCoverageUrl
+    if (!200.equals(response.status)) {
+        lastCoverageUrl = "${env.JOB_URL}../master/lastSuccessfulBuild/jacoco/api/json"
+        response = httpRequest lastCoverageUrl
+    }
     if (200.equals(response.status)) {
         def jsonObject = readJSON text: response.content
         def coverage = jsonObject['instructionCoverage']['percentageFloat']
