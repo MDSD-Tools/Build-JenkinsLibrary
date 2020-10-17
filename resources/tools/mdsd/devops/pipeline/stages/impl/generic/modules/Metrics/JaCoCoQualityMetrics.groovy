@@ -12,13 +12,17 @@ jacoco([
 if (CFG.isPullRequest) {
     final COVERAGE_LEVEL = 'instructionCoverage'
     final EPSILON = 0.1
+    final STATUS_CONTEXT = 'continuous-integration/jenkins/codecoverage'
+    final STATUS_URL = "${env.BUILD_URL}jacoco"
 
 
     echo "Collecting coverage of master branch"
-    def masterCoverageUrl = "${env.JOB_URL}../main/lastSuccessfulBuild/jacoco/api/json"
+    def masterBranchName = 'main'
+    def masterCoverageUrl = "${env.JOB_URL}../${masterBranchName}/lastSuccessfulBuild/jacoco/api/json"
     def response = httpRequest url: masterCoverageUrl, validResponseCodes: '100:599'
     if (!200.equals(response.status)) {
-        masterCoverageUrl = "${env.JOB_URL}../master/lastSuccessfulBuild/jacoco/api/json"
+        masterBranchName = 'master'
+        masterCoverageUrl = "${env.JOB_URL}../${masterBranchName}/lastSuccessfulBuild/jacoco/api/json"
         response = httpRequest url: masterCoverageUrl, validResponseCodes: '100:599'
     }
     if (200.equals(response.status)) {
@@ -27,7 +31,7 @@ if (CFG.isPullRequest) {
         echo "Found master branch coverage ${COVERAGE_LEVEL} of ${masterCoverage}."
 
         echo "Determining job coverage"
-        def coverageUrl = "${env.BUILD_URL}/jacoco/api/json"
+        def coverageUrl = "${env.BUILD_URL}jacoco/api/json"
         response = httpRequest url: coverageUrl, validResponseCodes: '100:599'
         if (200.equals(response.status)) {
             jsonObject = readJSON text: response.content
@@ -38,7 +42,10 @@ if (CFG.isPullRequest) {
                 // TODO report worsened coverage
             } else {
                 echo "Coverage did not decrease."
-                // TODO report increased or same coverage
+                githubNotify context: STATUS_CONTEXT,
+                             targetUrl: STATUS_URL,
+                             status: 'SUCCESS',
+                             description: "The code coverage did not decrease with respect to the ${masterBranchName} branch."
             }
         } else {
             echo "Could not find job coverage."
