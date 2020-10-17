@@ -8,3 +8,9 @@ jacoco([
     inclusionPattern: '**/*.class',
     exclusionPattern: '**/*Test*.class'
 ])
+
+if (CFG.isPullRequest) {
+    echo "Test Coverage Debug"
+    echo "${env.BUILD_URL}"
+    echo "${env.JOB_URL}"
+}
