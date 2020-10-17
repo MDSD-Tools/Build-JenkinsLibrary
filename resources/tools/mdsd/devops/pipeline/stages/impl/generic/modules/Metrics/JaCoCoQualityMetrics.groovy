@@ -14,6 +14,7 @@ if (CFG.isPullRequest) {
     final EPSILON = 0.1
     final STATUS_CONTEXT = 'continuous-integration/jenkins/codecoverage'
     final STATUS_URL = "${env.BUILD_URL}jacoco"
+    final CREDENTIALS_ID = '8adf889c-2157-45d1-acc7-1c6211538dac'
 
 
     echo "Collecting coverage of master branch"
@@ -42,7 +43,8 @@ if (CFG.isPullRequest) {
                 // TODO report worsened coverage
             } else {
                 echo "Coverage did not decrease."
-                githubNotify context: STATUS_CONTEXT,
+                githubNotify credentialsId: CREDENTIALS_ID,
+                             context: STATUS_CONTEXT,
                              targetUrl: STATUS_URL,
                              status: 'SUCCESS',
                              description: "The code coverage did not decrease with respect to the ${masterBranchName} branch."
