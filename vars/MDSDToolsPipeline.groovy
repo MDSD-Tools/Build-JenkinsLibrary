@@ -15,8 +15,8 @@ def call(body) {
             hddLimit = '20G'
         }
         
-        skipDeploy ("${this.BRANCH_NAME}" !in ['master', 'main'])
-        skipNotification ("${this.BRANCH_NAME}" !in ['master', 'main'])
+        skipDeploy (!("${this.BRANCH_NAME}" in ['master', 'main']))
+        skipNotification (!("${this.BRANCH_NAME}" in ['master', 'main']))
         
         deployUpdatesiteSshName 'web'
         deployUpdatesiteRootDir '/home/sftp/data'
