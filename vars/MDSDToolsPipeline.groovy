@@ -15,12 +15,12 @@ def call(body) {
             hddLimit = '20G'
         }
         
-        skipDeploy ("${this.BRANCH_NAME}" != 'master')
-        skipNotification ("${this.BRANCH_NAME}" != 'master')
+        skipDeploy ("${this.BRANCH_NAME}" !in ['master', 'main'])
+        skipNotification ("${this.BRANCH_NAME}" !in ['master', 'main'])
         
         deployUpdatesiteSshName 'web'
         deployUpdatesiteRootDir '/home/sftp/data'
-        deployUpdatesiteSubDir ("${this.BRANCH_NAME}" == 'master' ? 'nightly': "branches/${this.BRANCH_NAME}")
+        deployUpdatesiteSubDir ("${this.BRANCH_NAME}" in ['master', 'main'] ? 'nightly': "branches/${this.BRANCH_NAME}")
         deployUpdatesiteProjectDir this.scm.userRemoteConfigs[0].url.replaceFirst(/^.*\/([^\/]+?).git$/, '$1').toLowerCase()
 
         createCompositeUpdatesiteScriptFileId '57dc902b-f5a7-49a9-aec3-98deabe48580'
