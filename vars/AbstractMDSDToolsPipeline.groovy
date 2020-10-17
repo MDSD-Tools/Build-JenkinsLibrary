@@ -49,7 +49,7 @@ def call(defaults  = [:], overrides = [:]) {
         steps {
           extendConfiguration([
             workspacePath: pwd(),
-            isMasterBranch: ['master', 'main'].find{it == "$BRANCH_NAME"},
+            isMasterBranch: ['master', 'main'].find{it == "$BRANCH_NAME"} != null,
             isPullRequest: !(env.CHANGE_TARGET == null)
           ])
           MPLModule()
