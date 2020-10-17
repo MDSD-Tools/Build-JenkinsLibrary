@@ -59,7 +59,7 @@ if (CFG.isPullRequest) {
                              context: STATUS_CONTEXT,
                              targetUrl: STATUS_URL,
                              status: 'ERROR',
-                             description: "The code coverage decreased from ${masterCoverage} to ${jobCoverage} with respect to the ${masterBranchName} branch."
+                             description: "The code coverage decreased from ${masterCoverage}% to ${jobCoverage}% with respect to the ${masterBranchName} branch."
             } else {
                 // coverage is better or equal
                 echo "Coverage did not decrease."
