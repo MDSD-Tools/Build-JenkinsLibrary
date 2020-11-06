@@ -3,7 +3,7 @@ def call(body) {
         agent_label = 'docker'
 
         buildWithMaven {
-            version = '3.6.0'
+            version = '3'
             jdkVersion = 11
             settingsId = 'fba2768e-c997-4043-b10b-b5ca461aff54'
             goal = 'clean verify'
