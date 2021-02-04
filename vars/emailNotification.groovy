@@ -20,7 +20,7 @@ def notifyFailure(defaultRecipient) {
 }
 
 def notify(defaultRecipient, token, verb) {
-	node {
+	node ('master') {
 		wrap([$class: 'MaskPasswordsBuildWrapper', varMaskRegexes: [
 			[regex: '@[^\\s,]+']
 		]]) {
