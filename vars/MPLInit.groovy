@@ -1,6 +1,4 @@
 def call(usingDocker = true, buildTool = "Maven", deployment = ['updatesite'], constraintBuild = true) {
-    library('mpl@master')
-
     MPLEnforce([])
 
     MPLModulesPath('tools/mdsd/devops/pipeline/stages')
